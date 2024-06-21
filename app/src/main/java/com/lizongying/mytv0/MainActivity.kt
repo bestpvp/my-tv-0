@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.lizongying.mytv0.models.TVList
+import com.lizongying.mytv0.requests.HttpClient
 
 
 class MainActivity : FragmentActivity() {
@@ -111,6 +112,10 @@ class MainActivity : FragmentActivity() {
         }
 
         gestureDetector = GestureDetector(this, GestureListener(this))
+
+        println("本地配置: "+SP.config)
+        val sourceUrl = "https://gitee.com/bestpvp/config/raw/master/config/unify.json"
+        TVList.getSource(sourceUrl)
 
         showTime()
     }

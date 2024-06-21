@@ -10,11 +10,11 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.lizongying.mytv0"
+        applicationId = "com.bestpvp.livetv"
         minSdk = 21
         targetSdk = 34
-        versionCode = getVersionCode()
-        versionName = getVersionName()
+        versionCode = 240621
+        versionName = "240621"
         multiDexEnabled = true
     }
 

@@ -1,6 +1,7 @@
 package com.lizongying.mytv0.models
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -17,13 +18,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.io.File
+import kotlin.math.log
 
 object TVList {
     private const val TAG = "TVList"
     const val FILE_NAME = "channels.txt"
     private lateinit var appDirectory: File
     private lateinit var serverUrl: String
+    private lateinit var sourceUrl: String
     private lateinit var list: List<TV>
     var listModel: List<TVModel> = listOf()
     val groupModel = TVGroupModel()
@@ -103,9 +107,44 @@ object TVList {
         }
     }
 
-    private fun update(serverUrl: String) {
+    private fun getSource(){
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.i(TAG, "request $sourceUrl")
+                val request = okhttp3.Request.Builder().url(sourceUrl).build()
+                val response = HttpClient.okHttpClient.newCall(request).execute()
+
+                if (response.isSuccessful) {
+                    val str = response.body()!!.string()
+                    val json = JSONObject(str)
+                    val live = json.getString("live")
+                    println("在线配置: $live | 本地配置: ${SP.config}") // Or use it as needed、
+                    update(live)
+                } else {
+                    Log.e("", "request status ${response.code()}")
+                    "频道状态错误".showToast()
+                }
+            } catch (e: JsonSyntaxException) {
+                Log.e("JSON Parse Error", e.toString())
+                "频道格式错误".showToast()
+            } catch (e: NullPointerException) {
+                Log.e("Null Pointer Error", e.toString())
+                "无法读取频道".showToast()
+            } catch (e: Exception) {
+                Log.e("", "request error $e")
+                "频道请求错误".showToast()
+            }
+        }
+    }
+
+    fun update(serverUrl: String) {
         this.serverUrl = serverUrl
         update()
+    }
+
+    fun getSource(sourceUrl: String) {
+        this.sourceUrl = sourceUrl
+        getSource()
     }
 
     fun parseUri(uri: Uri) {
